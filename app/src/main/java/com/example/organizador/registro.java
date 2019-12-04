@@ -1,35 +1,49 @@
 package com.example.organizador;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.example.organizador.models.registro1;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class registro extends AppCompatActivity implements View.OnClickListener{
 
+    private List <registro1> lista = new ArrayList<registro1>();
+    ArrayAdapter <registro1> personaArrayAdapter;
+
     FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference;
 
-    private Button registrar;
+    private Button registrar, modificar,eliminar;
+    private ListView lista_personas;
 
     private TextView ingresar;
     EditText nombre, apellido, correo, nombre_usuario, direccion, contraseña, celular,contraseña2;
     RadioButton f,m;
 
+    registro1 personaSeleccionada;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +55,11 @@ public class registro extends AppCompatActivity implements View.OnClickListener{
     private void initControl() {
 
         registrar = ( Button ) findViewById(R.id.registrar);
+        modificar = ( Button ) findViewById(R.id.modificar);
+        eliminar = ( Button ) findViewById(R.id.eliminar);
+
         ingresar= ( TextView ) findViewById(R.id.ingresar);
+        lista_personas = findViewById(R.id.lista);
 
         nombre = findViewById(R.id.nombre);
         apellido = findViewById( R.id.apellido);
@@ -57,7 +75,45 @@ public class registro extends AppCompatActivity implements View.OnClickListener{
 
         registrar.setOnClickListener(this);
         ingresar.setOnClickListener(this);
+        modificar.setOnClickListener(this);
+        eliminar.setOnClickListener(this);
        inicializarFirebase();
+       listarDatos();
+
+       lista_personas.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+           @Override
+           public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+               personaSeleccionada = (registro1)adapterView.getItemAtPosition(i);
+               nombre.setText(personaSeleccionada.getNombre());
+               apellido.setText(personaSeleccionada.getApellido());
+               correo.setText(personaSeleccionada.getCorreo());
+               nombre_usuario.setText(personaSeleccionada.getNombre_usuario());
+               direccion.setText(personaSeleccionada.getDirección());
+               celular.setText(personaSeleccionada.getCelular());
+           }
+       });
+
+    }
+
+    private void listarDatos() {
+        databaseReference.child("registro1").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                lista.clear ();
+                for (DataSnapshot objSnapshot : dataSnapshot.getChildren()){
+                    registro1 p = objSnapshot.getValue(registro1.class);
+                    lista.add(p);
+
+                    personaArrayAdapter =new ArrayAdapter<registro1>(registro.this, android.R.layout.simple_list_item_1, lista);
+                    lista_personas.setAdapter(personaArrayAdapter);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void inicializarFirebase() {
