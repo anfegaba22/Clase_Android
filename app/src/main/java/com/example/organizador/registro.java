@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.organizador.models.registro1;
 import com.google.firebase.FirebaseApp;
@@ -145,6 +146,32 @@ public class registro extends AppCompatActivity implements View.OnClickListener{
 
 
         switch (v1.getId()) {
+            case R.id.modificar:
+                registro1 r = new registro1();
+                r.setId(personaSeleccionada.getId());
+
+                r.setNombre(nombre1);
+                r.setApellido(apellido1);
+                r.setCorreo(correo1);
+                r.setNombre_usuario(nombre_usuario1);
+                r.setDirección(direccion1);
+                r.setContraseña(contraseña1);
+                r.setCelular(celular1);
+                r.setContraseña2(contraseña22);
+
+                databaseReference.child("registro1").child(r.getId()).setValue(r);
+                Toast.makeText(this,"Actualizado",Toast.LENGTH_LONG).show();
+                clear();
+                break;
+
+            case R.id.eliminar:
+                registro1 reg = new registro1();
+                reg.setId(personaSeleccionada.getId());
+                databaseReference.child("registro1").child(reg.getId()).removeValue();
+                Toast.makeText(this,"Eliminado", Toast.LENGTH_LONG).show();
+                clear();
+                break;
+
             case R.id.ingresar:
                 Intent intent = new Intent(v1.getContext(), MainActivity.class);
                 startActivityForResult(intent,0);
@@ -174,6 +201,17 @@ public class registro extends AppCompatActivity implements View.OnClickListener{
 
                 break;
         }
+    }
+
+    private void clear() {
+        nombre.setText("");
+        apellido.setText("");
+        correo.setText("");
+        nombre_usuario.setText("");
+        direccion.setText("");
+        contraseña.setText("");
+        celular.setText("");
+        contraseña2.setText("");
     }
 
     private void validate() {
